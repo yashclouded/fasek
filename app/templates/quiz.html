@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}Quiz: {{ deck.title }} — FlashForge{% endblock %}
+{% block content %}
+
+<div class="max-w-2xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+            <a href="{{ url_for('decks.view_deck', id=deck.id) }}" class="text-gray-400 hover:text-gray-600 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </a>
+            <h1 class="text-2xl font-bold">{{ deck.title }}</h1>
+        </div>
+        <span id="progress-text" class="text-sm text-gray-400"></span>
+    </div>
+
+    <div class="w-full bg-gray-200 rounded-full h-2 mb-8">
+        <div id="progress-bar" class="bg-brand-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+    </div>
+
+    <div id="quiz-area">
+        <div class="card-flip mx-auto" style="min-height: 280px;">
+            <div id="card-container" class="card-flip-inner relative w-full" style="min-height: 280px;">
+                <div class="card-front absolute inset-0 bg-white rounded-2xl border border-gray-200 p-8 flex flex-col items-center justify-center text-center shadow-sm">
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-4">Question</p>
+                    <p id="card-question" class="text-xl font-semibold text-gray-900 leading-relaxed"></p>
+                    <button id="show-answer-btn" onclick="flipCard()"
+                        class="mt-8 bg-brand-600 text-white px-8 py-2.5 rounded-xl font-semibold hover:bg-brand-700 transition shadow-sm">
+                        Show Answer
+                    </button>
+                </div>
+                <div class="card-back absolute inset-0 bg-white rounded-2xl border border-gray-200 p-8 flex flex-col items-center justify-center text-center shadow-sm">
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-4">Answer</p>
+                    <p id="card-answer" class="text-xl font-semibold text-gray-900 leading-relaxed mb-8"></p>
+                    <p class="text-xs text-gray-400 mb-3">How well did you know this?</p>
+                    <div class="flex gap-3">
+                        <button onclick="rateCard('hard')"
+                            class="bg-red-50 text-red-700 px-6 py-2.5 rounded-xl font-semibold hover:bg-red-100 transition border border-red-200">
+                            Hard
+                        </button>
+                        <button onclick="rateCard('medium')"
+                            class="bg-yellow-50 text-yellow-700 px-6 py-2.5 rounded-xl font-semibold hover:bg-yellow-100 transition border border-yellow-200">
+                            Medium
+                        </button>
+                        <button onclick="rateCard('easy')"
+                            class="bg-green-50 text-green-700 px-6 py-2.5 rounded-xl font-semibold hover:bg-green-100 transition border border-green-200">
+                            Easy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Complete (hidden initially) -->
+    <div id="quiz-complete" class="hidden bg-white rounded-2xl border border-gray-200 p-12 text-center shadow-sm">
+        <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        </div>
+        <h2 class="text-2xl font-bold mb-2">Quiz Complete!</h2>
+        <div id="quiz-stats" class="text-gray-500 mb-6"></div>
+        <div class="flex justify-center gap-3">
+            <a href="{{ url_for('quiz.start_quiz', deck_id=deck.id) }}"
+                class="bg-brand-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-brand-700 transition">
+                Quiz Again
+            </a>
+            <a href="{{ url_for('decks.view_deck', id=deck.id) }}"
+                class="bg-gray-100 text-gray-600 px-6 py-2.5 rounded-xl font-medium hover:bg-gray-200 transition">
+                Back to Deck
+            </a>
+            <a href="{{ url_for('main.dashboard') }}"
+                class="bg-gray-100 text-gray-600 px-6 py-2.5 rounded-xl font-medium hover:bg-gray-200 transition">
+                Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const cards = {{ cards|tojson }};
+    let currentIndex = 0;
+    let results = { easy: 0, medium: 0, hard: 0 };
+
+    function updateProgress() {
+        const pct = cards.length > 0 ? ((currentIndex) / cards.length * 100) : 0;
+        document.getElementById('progress-bar').style.width = pct + '%';
+        document.getElementById('progress-text').textContent = `${currentIndex} / ${cards.length}`;
+    }
+
+    function showCard() {
+        if (currentIndex >= cards.length) {
+            finishQuiz();
+            return;
+        }
+        const card = cards[currentIndex];
+        document.getElementById('card-question').textContent = card.question;
+        document.getElementById('card-answer').textContent = card.answer;
+        document.getElementById('card-container').classList.remove('flipped');
+        updateProgress();
+    }
+
+    function flipCard() {
+        document.getElementById('card-container').classList.add('flipped');
+    }
+
+    function rateCard(difficulty) {
+        const card = cards[currentIndex];
+        results[difficulty]++;
+
+        fetch('{{ url_for("quiz.review_card") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `card_id=${card.id}&difficulty=${difficulty}`
+        });
+
+        currentIndex++;
+        showCard();
+    }
+
+    function finishQuiz() {
+        document.getElementById('quiz-area').classList.add('hidden');
+        document.getElementById('quiz-complete').classList.remove('hidden');
+        document.getElementById('progress-bar').style.width = '100%';
+        document.getElementById('progress-text').textContent = `${cards.length} / ${cards.length}`;
+
+        const total = results.easy + results.medium + results.hard;
+        document.getElementById('quiz-stats').innerHTML = `
+            <p class="text-lg mb-3">You reviewed <strong>${total}</strong> cards</p>
+            <div class="flex justify-center gap-6 text-sm">
+                <span class="text-green-600 font-medium">Easy: ${results.easy}</span>
+                <span class="text-yellow-600 font-medium">Medium: ${results.medium}</span>
+                <span class="text-red-600 font-medium">Hard: ${results.hard}</span>
+            </div>
+        `;
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            if (!document.getElementById('card-container').classList.contains('flipped')) {
+                flipCard();
+            }
+        }
+        if (document.getElementById('card-container').classList.contains('flipped')) {
+            if (e.key === '1') rateCard('hard');
+            if (e.key === '2') rateCard('medium');
+            if (e.key === '3') rateCard('easy');
+        }
+    });
+
+    showCard();
+</script>
+{% endblock %}

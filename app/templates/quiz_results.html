@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Quiz Results — FlashForge{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto text-center">
+    <h1 class="text-2xl font-bold mb-4">Quiz Results: {{ deck.title }}</h1>
+    <p class="text-gray-500 mb-8">Review your performance on this deck.</p>
+
+    <div class="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
+        <div class="grid grid-cols-3 gap-4 mb-6">
+            <div class="bg-green-50 rounded-xl p-4">
+                <p class="text-2xl font-bold text-green-600">{{ deck.cards|selectattr('difficulty_label', 'equalto', 'easy')|list|length }}</p>
+                <p class="text-xs text-green-700 font-medium">Easy</p>
+            </div>
+            <div class="bg-yellow-50 rounded-xl p-4">
+                <p class="text-2xl font-bold text-yellow-600">{{ deck.cards|selectattr('difficulty_label', 'equalto', 'medium')|list|length }}</p>
+                <p class="text-xs text-yellow-700 font-medium">Medium</p>
+            </div>
+            <div class="bg-red-50 rounded-xl p-4">
+                <p class="text-2xl font-bold text-red-600">{{ deck.cards|selectattr('difficulty_label', 'equalto', 'hard')|list|length }}</p>
+                <p class="text-xs text-red-700 font-medium">Hard</p>
+            </div>
+        </div>
+        <div class="flex justify-center gap-3">
+            <a href="{{ url_for('quiz.start_quiz', deck_id=deck.id) }}" class="bg-brand-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-brand-700 transition">Quiz Again</a>
+            <a href="{{ url_for('main.dashboard') }}" class="bg-gray-100 text-gray-600 px-6 py-2.5 rounded-xl font-medium hover:bg-gray-200 transition">Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

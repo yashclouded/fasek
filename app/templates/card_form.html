@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Card' if card else 'Add Card' }} — FlashForge{% endblock %}
+{% block content %}
+<div class="max-w-lg mx-auto">
+    <div class="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
+        <div class="flex items-center gap-3 mb-6">
+            <a href="{{ url_for('decks.view_deck', id=deck.id) }}" class="text-gray-400 hover:text-gray-600 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </a>
+            <h2 class="text-2xl font-bold">{{ 'Edit Card' if card else 'Add Card' }}</h2>
+            <span class="text-sm text-gray-400">in {{ deck.title }}</span>
+        </div>
+
+        <form method="POST" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Question</label>
+                <textarea name="question" rows="3" required autofocus
+                    placeholder="Enter your question..."
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition text-sm resize-none">{{ card.question if card else '' }}</textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Answer</label>
+                <textarea name="answer" rows="3" required
+                    placeholder="Enter the answer..."
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition text-sm resize-none">{{ card.answer if card else '' }}</textarea>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="submit" name="save"
+                    class="bg-brand-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-brand-700 transition">
+                    {{ 'Save Changes' if card else 'Add Card' }}
+                </button>
+                {% if not card %}
+                <button type="submit" name="add_another" value="1"
+                    class="bg-brand-50 text-brand-700 px-6 py-2.5 rounded-lg font-semibold hover:bg-brand-100 transition">
+                    Add &amp; Create Another
+                </button>
+                {% endif %}
+                <a href="{{ url_for('decks.view_deck', id=deck.id) }}"
+                    class="text-gray-500 px-6 py-2.5 rounded-lg hover:bg-gray-100 transition font-medium">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

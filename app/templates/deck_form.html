@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Deck' if deck else 'New Deck' }} — FlashForge{% endblock %}
+{% block content %}
+<div class="max-w-lg mx-auto">
+    <div class="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
+        <h2 class="text-2xl font-bold mb-6">{{ 'Edit Deck' if deck else 'Create New Deck' }}</h2>
+
+        <form method="POST" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Deck Title</label>
+                <input type="text" name="title" required autofocus
+                    value="{{ deck.title if deck else '' }}"
+                    placeholder="e.g. Biology Chapter 5"
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Description <span class="text-gray-400">(optional)</span></label>
+                <textarea name="description" rows="3"
+                    placeholder="What's this deck about?"
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition text-sm resize-none">{{ deck.description if deck else '' }}</textarea>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="submit"
+                    class="bg-brand-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-brand-700 transition">
+                    {{ 'Save Changes' if deck else 'Create Deck' }}
+                </button>
+                <a href="{{ url_for('decks.view_deck', id=deck.id) if deck else url_for('main.dashboard') }}"
+                    class="text-gray-500 px-6 py-2.5 rounded-lg hover:bg-gray-100 transition font-medium">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

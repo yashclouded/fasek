@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard — FlashForge{% endblock %}
+{% block content %}
+
+<div class="max-w-2xl mx-auto">
+    <div class="text-center mb-8">
+        <h1 class="text-2xl font-bold mb-2">🏆 Leaderboard</h1>
+        <p class="text-gray-500 text-sm">Top learners on FlashForge this week</p>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                    <th class="text-center px-6 py-3 font-medium text-gray-500 w-16">Rank</th>
+                    <th class="text-left px-6 py-3 font-medium text-gray-500">User</th>
+                    <th class="text-right px-6 py-3 font-medium text-gray-500">Score</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for entry in leaderboard %}
+                <tr class="{% if entry.is_current_user %}bg-brand-50{% else %}hover:bg-gray-50{% endif %} transition">
+                    <td class="text-center px-6 py-4">
+                        {% if entry.rank == 1 %}
+                            <span class="text-xl">🥇</span>
+                        {% elif entry.rank == 2 %}
+                            <span class="text-xl">🥈</span>
+                        {% elif entry.rank == 3 %}
+                            <span class="text-xl">🥉</span>
+                        {% else %}
+                            <span class="text-gray-400 font-medium">{{ entry.rank }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="font-medium {% if entry.is_current_user %}text-brand-700{% else %}text-gray-900{% endif %}">
+                            {{ entry.username }}
+                            {% if entry.is_current_user %}
+                                <span class="text-xs bg-brand-100 text-brand-600 px-2 py-0.5 rounded-full ml-2">You</span>
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right font-bold text-gray-700">
+                        {{ "{:,}".format(entry.score) }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <p class="text-center text-xs text-gray-400 mt-4">Scores are updated in real time. Keep studying to climb the ranks!</p>
+</div>
+
+{% endblock %}
